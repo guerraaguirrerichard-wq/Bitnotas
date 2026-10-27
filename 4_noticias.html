@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bitnotas — Noticias</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* ========== NOTICIAS: CORCHO CON NOTAS ========== */
+        .nt-intro { color: var(--verde-oscuro, #075E3F); font-weight: 600; margin-bottom: 16px; max-width: 62ch; }
+
+        /* ---- filtros ---- */
+        .nt-filtros { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .nt-filtro {
+            --c: #075E3F;
+            border: 2px solid var(--c); background: #fff; color: var(--c);
+            border-radius: 999px; padding: 8px 18px; font-weight: 700; font-size: 14px; cursor: pointer;
+            transition: background .2s, color .2s, transform .2s;
+        }
+        .nt-filtro:hover { transform: translateY(-2px); }
+        .nt-filtro[aria-pressed="true"] { background: var(--c); color: #fff; }
+        .nt-filtro:focus-visible { outline: 3px solid color-mix(in srgb, var(--c) 40%, transparent); outline-offset: 2px; }
+
+        /* ---- tablero de corcho ---- */
+        .nt-corcho {
+            max-width: 1100px; margin: 0 auto 40px; padding: 44px 34px 38px;
+            border: 14px solid #7a4e24; border-radius: 16px;
+            background-color: #c9a06a;
+            background-image:
+                radial-gradient(rgba(120, 80, 40, .35) 1px, transparent 1.6px),
+                radial-gradient(rgba(255, 230, 190, .4) 1px, transparent 1.6px);
+            background-size: 14px 14px, 23px 23px;
+            background-position: 0 0, 7px 9px;
+            box-shadow: inset 0 0 45px rgba(60, 35, 10, .45), 0 14px 35px rgba(0, 0, 0, .2);
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 38px 30px;
+        }
+        .nt-vacio { grid-column: 1 / -1; text-align: center; color: #5c3a17; font-weight: 700; padding: 30px; }
+
+        /* ---- nota adhesiva ---- */
+        .nt-nota {
+            --c: #3b82c4; --papel: #d3e8ff; --rot: 0deg;
+            position: relative; display: block; width: 100%; text-align: left; cursor: pointer;
+            border: none; padding: 30px 20px 22px; background: var(--papel); color: #26352b;
+            transform: rotate(var(--rot));
+            box-shadow: 0 10px 18px rgba(60, 35, 10, .35);
+            transition: transform .25s, box-shadow .25s;
+            animation: aparece .35s ease-out;
+        }
+        .nt-nota[hidden] { display: none; }
+        .nt-nota:hover, .nt-nota:focus-visible {
+            transform: rotate(0deg) scale(1.05); z-index: 3; outline: none;
+            box-shadow: 0 18px 28px rgba(60, 35, 10, .4);
+        }
+        /* chincheta */
+        .nt-nota::before {
+            content: ""; position: absolute; top: -9px; left: 50%; width: 20px; height: 20px; margin-left: -10px;
+            border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ff8f8f, #d33b3b 55%, #8f1d1d);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .4);
+        }
+        /* esquina doblada */
+        .nt-nota::after {
+            content: ""; position: absolute; right: 0; bottom: 0; width: 24px; height: 24px;
+            background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, .13) 50%);
+        }
+        .nt-titulo, .nt-resumen, .nt-mas { display: block; }
+        .nt-cabeza { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .nt-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .nt-etiqueta {
+            align-self: flex-start; background: var(--c); color: #fff; font-size: 12px; font-weight: 700;
+            border-radius: 6px; padding: 2px 9px;
+        }
+        .nt-fecha { font-size: 12px; color: #4d5b52; }
+        .nt-titulo {
+            font-family: "Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive;
+            font-size: 18px; line-height: 1.25; font-weight: 700; margin-bottom: 8px; color: #1d2b23;
+        }
+        .nt-resumen {
+            font-size: 14px; line-height: 1.5; color: #33423a;
+            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .nt-mas { margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--c); }
+
+        /* ---- iconos (mismo estilo que el resto del sitio) ---- */
+        .icono {
+            width: 62px; height: 62px; flex-shrink: 0; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 30px; line-height: 1;
+            background: #fff; border: 4px solid var(--c);
+            box-shadow: 0 8px 18px rgba(0, 94, 63, .22);
+            animation: flotar 4s ease-in-out infinite; animation-delay: var(--d, 0s);
+        }
+        @keyframes flotar { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+        @keyframes aparece { from { opacity: 0; scale: .9; } to { opacity: 1; scale: 1; } }
+
+        /* ---- hoja de cuaderno (al abrir una noticia) ---- */
+        dialog.nt-cuaderno {
+            border: none; padding: 0; border-radius: 10px; width: min(92vw, 640px); max-height: 88vh; overflow: auto;
+            box-shadow: 0 20px 55px rgba(0, 0, 0, .4);
+        }
+        dialog.nt-cuaderno::backdrop { background: rgba(60, 35, 10, .6); backdrop-filter: blur(3px); }
+        .nt-papel {
+            position: relative; padding: 34px 30px 36px 78px; min-height: 320px;
+            background-color: #fffdf5;
+            background-image: repeating-linear-gradient(to bottom, transparent 0 31px, #cfe3f5 31px 32px);
+            background-position: 0 6px;
+        }
+        .nt-papel::before { content: ""; position: absolute; left: 60px; top: 0; bottom: 0; width: 2px; background: #e9a1a1; }
+        .nt-espiral {
+            position: absolute; left: 10px; top: 0; bottom: 0; width: 30px;
+            background: radial-gradient(circle at 15px 20px, #3a3f48 5px, #9aa0a8 6px, transparent 8px) 0 0 / 30px 40px repeat-y;
+        }
+        .nt-cerrar {
+            position: absolute; top: 12px; right: 14px; width: 36px; height: 36px; border: none; border-radius: 50%;
+            background: #eee; font-size: 16px; cursor: pointer;
+        }
+        .nt-cerrar:hover { background: #ddd; }
+        .nt-papel h3 { font-family: "Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive; font-size: 24px; line-height: 32px; margin: 10px 40px 0 0; color: var(--c); }
+        .nt-papel .nt-fecha { line-height: 32px; font-size: 13px; }
+        .nt-papel p { line-height: 32px; font-size: 16px; color: #2b3a31; }
+
+        @media (prefers-reduced-motion: reduce) { .icono, .nt-nota { animation: none; } }
+        @media (max-width: 640px) {
+            .nt-corcho { padding: 36px 16px 28px; border-width: 10px; }
+            .nt-nota { max-width: 340px; margin: 0 auto; }
+            .nt-papel { padding: 30px 18px 30px 62px; }
+            .nt-papel::before { left: 46px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= HEADER ================= -->
+    <header class="site-header">
+        <div class="container">
+            <h1 class="brand">Bitnotas</h1>
+            <p class="tag">digitalizamos tus ideas y organizamos tu futuro</p>
+
+            <nav class="main-nav">
+                <a href="index.php">Inicio</a>
+                <a href="2_quienes_somos.html">Quiénes somos</a>
+                <a href="3_servicios.html">Servicios</a>
+                <a href="4_noticias.html">Noticias</a>
+                <a href="5_galeria.html">Galería</a>
+                <a href="6_contacto.html">Contacto</a>
+                <a href="7_politicas.html">Políticas</a>
+                <a href="8_prototipo.php">Prototipo</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ================= NOTICIAS ================= -->
+    <main class="container main">
+
+        <h2>Noticias</h2>
+        <p class="nt-intro">Las novedades de Bitnotas, pegadas en nuestro tablero. Filtra por tema o toca una nota para leerla completa.</p>
+
+        <div class="nt-filtros" id="filtros" role="group" aria-label="Filtrar noticias por categoría"></div>
+
+        <section class="nt-corcho" id="corcho" aria-live="polite"></section>
+
+    </main>
+
+    <!-- ================= HOJA DE CUADERNO ================= -->
+    <dialog class="nt-cuaderno" id="visor" aria-labelledby="visorTitulo">
+        <article class="nt-papel" id="papel">
+            <div class="nt-espiral" aria-hidden="true"></div>
+            <button class="nt-cerrar" id="cerrar" aria-label="Cerrar">✕</button>
+            <span class="nt-etiqueta" id="visorEtiqueta"></span>
+            <h3 id="visorTitulo"></h3>
+            <p class="nt-fecha" id="visorFecha"></p>
+            <div id="visorTexto"></div>
+        </article>
+    </dialog>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>© 2026 Bitnotas — Digitalizamos tus ideas</p>
+        </div>
+    </footer>
+
+    <script>
+        /* =====================================================
+           CATEGORÍAS (cada una tiene su color e icono)
+           ===================================================== */
+        const CATEGORIAS = {
+            educacion:    { nombre: "Educación",   color: "#3b82c4", papel: "#d3e8ff", icono: "📚" },
+            agricultura:  { nombre: "Agricultura", color: "#1f9d55", papel: "#d6f5c8", icono: "🌱" },
+            innovacion:   { nombre: "Innovación",  color: "#1fa99a", papel: "#c9f4ee", icono: "💡" }
+        };
+
+        /* =====================================================
+           AQUÍ AGREGAS NOTICIAS (una por bloque { ... },)
+           - cat: educacion | agricultura | innovacion
+           - fecha: AAAA-MM-DD (se ordenan solas, la más nueva primero)
+           - resumen: lo que se ve en la nota
+           - texto: lista de párrafos que se ven al abrirla
+           ¡Las fechas de abajo son de ejemplo, cámbialas por las reales!
+           ===================================================== */
+        const NOTICIAS = [
+            {
+                cat: "innovacion", fecha: "2026-10-15", titulo: "Innovación digital",
+                resumen: "En Bitnotas continuamos trabajando en nuevas herramientas digitales para facilitar la organización y gestión de información.",
+                texto: ["En Bitnotas continuamos trabajando en nuevas herramientas digitales para facilitar la organización y gestión de información."]
+            },
+            {
+                cat: "agricultura", fecha: "2026-09-28", titulo: "Tecnología en la agricultura",
+                resumen: "Las herramientas digitales permiten registrar actividades del campo, organizar información y mejorar el seguimiento de los cultivos.",
+                texto: ["Las herramientas digitales permiten registrar actividades del campo, organizar información y mejorar el seguimiento de los cultivos."]
+            },
+            {
+                cat: "educacion", fecha: "2026-09-10", titulo: "Educación digital",
+                resumen: "Bitnotas busca apoyar a los estudiantes mediante soluciones que faciliten la creación de notas, resúmenes y la organización de sus actividades.",
+                texto: ["Bitnotas busca apoyar a los estudiantes mediante soluciones que faciliten la creación de notas, resúmenes y la organización de sus actividades."]
+            }
+            // , { cat: "educacion", fecha: "2026-10-20", titulo: "Título", resumen: "Resumen corto.", texto: ["Párrafo 1.", "Párrafo 2."] }
+        ];
+
+        /* ---------- utilidades ---------- */
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        const fechaBonita = iso => new Date(iso + "T12:00:00").toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
+        const INCLINACION = [-2.5, 1.8, -1.2, 2.6, -3, 1.2];
+
+        const corcho = document.getElementById("corcho");
+        const filtros = document.getElementById("filtros");
+        const ordenadas = [...NOTICIAS].sort((a, b) => b.fecha.localeCompare(a.fecha));
+
+        /* ---------- notas ---------- */
+        corcho.innerHTML = ordenadas.map((n, i) => {
+            const c = CATEGORIAS[n.cat];
+            return `
+            <button class="nt-nota" data-cat="${esc(n.cat)}" data-i="${i}"
+                    style="--c:${c.color};--papel:${c.papel};--rot:${INCLINACION[i % INCLINACION.length]}deg"
+                    aria-label="Leer noticia: ${esc(n.titulo)}">
+                <span class="nt-cabeza">
+                    <span class="icono" style="--d:${(-i * 1.1).toFixed(1)}s" aria-hidden="true">${c.icono}</span>
+                    <span class="nt-meta">
+                        <span class="nt-etiqueta">${esc(c.nombre)}</span>
+                        <span class="nt-fecha">${fechaBonita(n.fecha)}</span>
+                    </span>
+                </span>
+                <span class="nt-titulo">${esc(n.titulo)}</span>
+                <span class="nt-resumen">${esc(n.resumen)}</span>
+                <span class="nt-mas">Leer nota →</span>
+            </button>`;
+        }).join("") + `<p class="nt-vacio" id="vacio" hidden>Todavía no hay notas en esta categoría.</p>`;
+
+        /* ---------- filtros ---------- */
+        const botonesFiltro = [["todas", "Todas", "#075E3F"], ...Object.entries(CATEGORIAS).map(([k, v]) => [k, v.nombre, v.color])];
+        filtros.innerHTML = botonesFiltro.map(([k, nombre, color], i) =>
+            `<button class="nt-filtro" data-f="${k}" style="--c:${color}" aria-pressed="${i === 0}">${esc(nombre)}</button>`).join("");
+
+        filtros.addEventListener("click", e => {
+            const b = e.target.closest(".nt-filtro");
+            if (!b) return;
+            filtros.querySelectorAll(".nt-filtro").forEach(x => x.setAttribute("aria-pressed", x === b));
+            let visibles = 0;
+            corcho.querySelectorAll(".nt-nota").forEach(nota => {
+                const mostrar = b.dataset.f === "todas" || nota.dataset.cat === b.dataset.f;
+                nota.hidden = !mostrar;
+                if (mostrar) visibles++;
+            });
+            document.getElementById("vacio").hidden = visibles > 0;
+        });
+
+        /* ---------- hoja de cuaderno ---------- */
+        const visor = document.getElementById("visor");
+
+        corcho.addEventListener("click", e => {
+            const nota = e.target.closest(".nt-nota");
+            if (!nota) return;
+            const n = ordenadas[+nota.dataset.i];
+            const c = CATEGORIAS[n.cat];
+
+            document.getElementById("papel").style.setProperty("--c", c.color);
+            const et = document.getElementById("visorEtiqueta");
+            et.textContent = c.nombre;
+            et.style.setProperty("--c", c.color);
+            document.getElementById("visorTitulo").textContent = n.titulo;
+            document.getElementById("visorFecha").textContent = fechaBonita(n.fecha);
+            document.getElementById("visorTexto").innerHTML = n.texto.map(p => `<p>${esc(p)}</p>`).join("");
+            visor.showModal();
+        });
+
+        document.getElementById("cerrar").onclick = () => visor.close();
+        visor.addEventListener("click", e => { if (e.target === visor) visor.close(); });
+    </script>
+
+</body>
+
+</html>

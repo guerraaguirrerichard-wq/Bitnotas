@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía: Inicio de Sesión + Registro desde 0</title>
+<style>
+  :root {
+    --primary: #6C63FF;
+    --primary-dark: #5a52d5;
+    --accent: #FF6584;
+    --success: #43D9A2;
+    --warning: #FFB347;
+    --bg: #0f0e17;
+    --bg2: #1a1928;
+    --bg3: #242338;
+    --text: #fffffe;
+    --text-muted: #a7a9be;
+    --code-bg: #0d0c1a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ─── HEADER ─────────────────────────────── */
+  header {
+    background: linear-gradient(135deg, #1a1928 0%, #2d2b50 100%);
+    border-bottom: 2px solid var(--primary);
+    padding: 40px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(108,99,255,.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(255,101,132,.1) 0%, transparent 60%);
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(108,99,255,.2);
+    border: 1px solid var(--primary);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: #a9a3ff;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    position: relative;
+  }
+  header h1 span { color: var(--primary); }
+  header p {
+    color: var(--text-muted);
+    margin-top: 10px;
+    font-size: 1rem;
+    position: relative;
+  }
+
+  /* ─── NAV TABS ───────────────────────────── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg2);
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: all .2s;
+    font-weight: 500;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,.06); color: var(--text); }
+  .tab-btn.active { background: var(--primary); color: #fff; }
+
+  /* ─── LAYOUT ─────────────────────────────── */
+  .container { max-width: 900px; margin: 0 auto; padding: 30px 20px 60px; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ─── STEPS ──────────────────────────────── */
+  .step {
+    background: var(--bg2);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .step:hover { border-color: rgba(108,99,255,.4); }
+  .step::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--primary);
+  }
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .step-num {
+    width: 36px; height: 36px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px;
+    flex-shrink: 0;
+  }
+  .step h3 { font-size: 1.1rem; font-weight: 700; }
+  .step p { color: var(--text-muted); font-size: .95rem; margin-bottom: 14px; }
+
+  /* ─── CODE BLOCKS ────────────────────────── */
+  .code-wrap {
+    background: var(--code-bg);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 14px 0;
+  }
+  .code-bar {
+    background: rgba(255,255,255,.04);
+    padding: 8px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .dots { display: flex; gap: 6px; }
+  .dots span { width: 10px; height: 10px; border-radius: 50%; }
+  .dots span:nth-child(1) { background: #ff5f57; }
+  .dots span:nth-child(2) { background: #febc2e; }
+  .dots span:nth-child(3) { background: #28c840; }
+  .copy-btn {
+    background: rgba(108,99,255,.2);
+    border: 1px solid rgba(108,99,255,.4);
+    color: #a9a3ff;
+    padding: 3px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all .2s;
+  }
+  .copy-btn:hover { background: rgba(108,99,255,.4); }
+  pre { padding: 18px; overflow-x: auto; font-size: 13px; line-height: 1.8; }
+  code { font-family: 'Cascadia Code', 'Fira Code', monospace; }
+
+  /* Syntax highlight */
+  .kw  { color: #c792ea; }
+  .fn  { color: #82aaff; }
+  .str { color: #c3e88d; }
+  .cm  { color: #546e7a; font-style: italic; }
+  .tag { color: #f07178; }
+  .at  { color: #ffcb6b; }
+  .val { color: #c3e88d; }
+  .num { color: #f78c6c; }
+  .prop{ color: #80cbc4; }
+
+  /* ─── TIPS / ALERTS ──────────────────────── */
+  .tip, .warn, .info, .danger, .new {
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: .9rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .tip    { background: rgba(67,217,162,.1);  border-left: 3px solid var(--success); color: #9efadf; }
+  .warn   { background: rgba(255,179,71,.1);  border-left: 3px solid var(--warning); color: #ffd98e; }
+  .info   { background: rgba(108,99,255,.1);  border-left: 3px solid var(--primary); color: #c0bfff; }
+  .danger { background: rgba(255,101,132,.1); border-left: 3px solid var(--accent);  color: #ffb3c3; }
+  .new    { background: rgba(67,217,162,.08); border-left: 3px solid #43D9A2;        color: #9efadf; }
+  .tip .icon, .warn .icon, .info .icon, .danger .icon, .new .icon { font-size: 18px; flex-shrink: 0; }
+
+  /* ─── CONCEPT CARDS ──────────────────────── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .card {
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 12px;
+    padding: 20px;
+    transition: transform .2s, border-color .2s;
+  }
+  .card:hover { transform: translateY(-2px); border-color: rgba(108,99,255,.4); }
+  .card-icon { font-size: 28px; margin-bottom: 10px; }
+  .card h4 { font-size: .95rem; margin-bottom: 8px; color: var(--primary); }
+  .card p  { font-size: .85rem; color: var(--text-muted); }
+
+  /* ─── DEMO LOGIN ─────────────────────────── */
+  .demo-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 20px 0;
+  }
+  @media(max-width:640px) { .demo-wrap { grid-template-columns: 1fr; } }
+  .demo-box {
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .demo-box h4 { font-size: .85rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .demo-input {
+    width: 100%;
+    background: var(--code-bg);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: .9rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .demo-input:focus { border-color: var(--primary); }
+  .demo-btn {
+    width: 100%;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    padding: 11px;
+    color: #fff;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    margin-top: 4px;
+  }
+  .demo-btn:hover  { background: var(--primary-dark); }
+  .demo-btn:active { transform: scale(.98); }
+  .demo-btn.secondary {
+    background: rgba(108,99,255,.2);
+    border: 1px solid rgba(108,99,255,.4);
+    color: #a9a3ff;
+  }
+  .demo-btn.secondary:hover { background: rgba(108,99,255,.35); }
+  .demo-msg { font-size: .82rem; min-height: 20px; color: var(--success); text-align: center; }
+  .demo-msg.error { color: var(--accent); }
+
+  /* ─── CHECKLIST ──────────────────────────── */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    font-size: .92rem;
+    color: var(--text-muted);
+  }
+  .checklist li span.check { color: var(--success); flex-shrink: 0; }
+
+  /* ─── FLOW DIAGRAM ───────────────────────── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 20px auto;
+    max-width: 340px;
+  }
+  .flow-box {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid rgba(108,99,255,.4);
+    border-radius: 10px;
+    padding: 12px 20px;
+    text-align: center;
+    font-size: .88rem;
+    font-weight: 600;
+  }
+  .flow-box.decision { border-color: rgba(255,179,71,.5);  color: var(--warning); background: rgba(255,179,71,.07); }
+  .flow-box.ok       { border-color: rgba(67,217,162,.5);  color: var(--success); background: rgba(67,217,162,.07); }
+  .flow-box.error    { border-color: rgba(255,101,132,.5); color: var(--accent);  background: rgba(255,101,132,.07); }
+  .flow-arrow { font-size: 20px; color: var(--text-muted); line-height: 1; padding: 3px 0; }
+  .flow-label { font-size: 11px; color: var(--text-muted); margin: -2px 0; }
+
+  /* ─── SECTION TITLE ──────────────────────── */
+  .sec-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+  .sec-sub   { color: var(--text-muted); margin-bottom: 28px; font-size: .92rem; }
+
+  /* ─── USUARIOS LIST (demo registro) ─────── */
+  .demo-users-list { width: 100%; list-style: none; }
+  .demo-users-list li {
+    background: rgba(108,99,255,.08);
+    border: 1px solid rgba(108,99,255,.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    font-size: .82rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .demo-users-list li .u-name { color: #a9a3ff; font-weight: 700; }
+  .demo-users-list li .u-email { color: var(--text-muted); font-size: .76rem; }
+  .demo-users-list li button {
+    background: none; border: none; color: rgba(255,101,132,.6);
+    cursor: pointer; font-size: .8rem; padding: 2px 6px; border-radius: 4px;
+    transition: color .2s;
+  }
+  .demo-users-list li button:hover { color: var(--accent); }
+  .empty-msg { color: var(--text-muted); font-size: .82rem; text-align: center; padding: 10px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">🎓 Media Técnica · Desarrollo Web</div>
+  <h1>Login <span>+ Registro</span> desde cero</h1>
+  <p>Aprende a construir autenticación completa paso a paso — con localStorage</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('conceptos',this)">📚 Conceptos</button>
+  <button class="tab-btn" onclick="showTab('html',this)">🏗️ HTML</button>
+  <button class="tab-btn" onclick="showTab('css',this)">🎨 CSS</button>
+  <button class="tab-btn" onclick="showTab('js',this)">⚡ JavaScript</button>
+  <button class="tab-btn" onclick="showTab('registro',this)">📝 Registro</button>
+  <button class="tab-btn" onclick="showTab('validacion',this)">🛡️ Validación</button>
+  <button class="tab-btn" onclick="showTab('demo',this)">🚀 Demo</button>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════
+     TAB 1: CONCEPTOS
+════════════════════════════════════════════ -->
+<div id="tab-conceptos" class="section active">
+  <p class="sec-title">¿Qué vamos a construir?</p>
+  <p class="sec-sub">Antes de escribir código, entendamos qué es un inicio de sesión, un registro, y cómo funcionan juntos.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🔐</div>
+      <h4>Autenticación</h4>
+      <p>Verificar que el usuario es quien dice ser. Compara lo que escribes con lo guardado.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📝</div>
+      <h4>Registro</h4>
+      <p>Crear una cuenta nueva. Recoge los datos del usuario y los guarda para uso futuro.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🗄️</div>
+      <h4>localStorage</h4>
+      <p>Almacenamiento del navegador. Guarda datos como texto JSON sin necesitar un servidor.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🍪</div>
+      <h4>Sesión / Token</h4>
+      <p>Tras iniciar sesión, el servidor entrega un "pase" que recuerda que el usuario está activo.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">📋</div><h3>Flujo completo: Registro → Login</h3></div>
+    <p>Ahora el flujo tiene dos caminos. Primero el usuario se registra, luego puede iniciar sesión:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;">
+      <div class="flow">
+        <div class="flow-box" style="border-color:rgba(67,217,162,.5);color:var(--success)">📝 REGISTRO</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box">Usuario llena el formulario</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box decision">¿Correo ya existe?</div>
+        <div class="flow-arrow">↓ No</div>
+        <div class="flow-box">Guardar en localStorage</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box ok">✅ Cuenta creada</div>
+      </div>
+      <div class="flow">
+        <div class="flow-box" style="border-color:rgba(108,99,255,.5);color:#a9a3ff">🔐 LOGIN</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box">Usuario ingresa correo y contraseña</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box">Buscar en localStorage + usuarios fijos</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box decision">¿Coincide?</div>
+        <div class="flow-arrow">↓ Sí</div>
+        <div class="flow-box ok">✅ Ir al dashboard</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">🗂️</div><h3>Archivos del proyecto</h3></div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>Estructura del proyecto</span></div>
+      <pre><code>📁 mi-login/
+  ├── <span class="val">index.html</span>     ← Login + formulario de registro (pestañas)
+  ├── <span class="val">style.css</span>      ← Diseño visual de ambos formularios
+  └── <span class="val">script.js</span>      ← Lógica: login, registro, localStorage</code></pre>
+    </div>
+  </div>
+
+  <div class="warn">
+    <span class="icon">⚠️</span>
+    <span><strong>Recuerda:</strong> localStorage guarda datos solo en ese navegador y computadora. No es una base de datos real. Para producción necesitas un backend (Node.js, PHP, Python) con base de datos (MySQL, MongoDB).</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 2: HTML
+════════════════════════════════════════════ -->
+<div id="tab-html" class="section">
+  <p class="sec-title">Paso 1 — HTML</p>
+  <p class="sec-sub">La estructura base con dos formularios: login y registro, alternando con pestañas.</p>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div><h3>Estructura general con pestañas</h3></div>
+    <p>En vez de dos páginas separadas, usamos pestañas dentro de una sola tarjeta para cambiar entre Login y Registro:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>index.html — estructura</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"login-container"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"login-card"</span><span class="tag">&gt;</span>
+
+    <span class="cm">&lt;!-- Pestañas para alternar --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"tab-switcher"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;button</span> <span class="at">class=</span><span class="val">"tab-btn active"</span> <span class="at">onclick=</span><span class="val">"mostrarTab('login')"</span><span class="tag">&gt;</span>Iniciar Sesión<span class="tag">&lt;/button&gt;</span>
+      <span class="tag">&lt;button</span> <span class="at">class=</span><span class="val">"tab-btn"</span>        <span class="at">onclick=</span><span class="val">"mostrarTab('registro')"</span><span class="tag">&gt;</span>Registrarse<span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+    <span class="cm">&lt;!-- Panel Login --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="at">id=</span><span class="val">"panelLogin"</span><span class="tag">&gt;</span>
+      <span class="cm">&lt;!-- formulario de login aquí --&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+    <span class="cm">&lt;!-- Panel Registro (oculto al inicio) --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="at">id=</span><span class="val">"panelRegistro"</span> <span class="at">style=</span><span class="val">"display:none"</span><span class="tag">&gt;</span>
+      <span class="cm">&lt;!-- formulario de registro aquí --&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span></code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div><h3>Formulario de Login</h3></div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>index.html — panelLogin</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="tag">&lt;div</span> <span class="at">id=</span><span class="val">"panelLogin"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"login-header"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;h1&gt;</span>Bienvenido 👋<span class="tag">&lt;/h1&gt;</span>
+    <span class="tag">&lt;p&gt;</span>Inicia sesión en tu cuenta<span class="tag">&lt;/p&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="tag">&lt;form</span> <span class="at">id=</span><span class="val">"loginForm"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"form-group"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;label</span> <span class="at">for=</span><span class="val">"email"</span><span class="tag">&gt;</span>Correo electrónico<span class="tag">&lt;/label&gt;</span>
+      <span class="tag">&lt;input</span> <span class="at">type=</span><span class="val">"email"</span> <span class="at">id=</span><span class="val">"email"</span> <span class="at">placeholder=</span><span class="val">"tu@correo.com"</span> <span class="at">required</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="at">class=</span><span class="val">"error-msg"</span> <span class="at">id=</span><span class="val">"emailError"</span><span class="tag">&gt;&lt;/span&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+    <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"form-group"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;label</span> <span class="at">for=</span><span class="val">"password"</span><span class="tag">&gt;</span>Contraseña<span class="tag">&lt;/label&gt;</span>
+      <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"input-wrap"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;input</span> <span class="at">type=</span><span class="val">"password"</span> <span class="at">id=</span><span class="val">"password"</span> <span class="at">placeholder=</span><span class="val">"••••••••"</span> <span class="at">required</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;button</span> <span class="at">type=</span><span class="val">"button"</span> <span class="at">id=</span><span class="val">"togglePass"</span><span class="tag">&gt;</span>👁️<span class="tag">&lt;/button&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;span</span> <span class="at">class=</span><span class="val">"error-msg"</span> <span class="at">id=</span><span class="val">"passError"</span><span class="tag">&gt;&lt;/span&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+    <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"alert"</span> <span class="at">id=</span><span class="val">"loginAlert"</span><span class="tag">&gt;&lt;/div&gt;</span>
+    <span class="tag">&lt;button</span> <span class="at">type=</span><span class="val">"submit"</span><span class="tag">&gt;</span>Ingresar<span class="tag">&lt;/button&gt;</span>
+  <span class="tag">&lt;/form&gt;</span>
+<span class="tag">&lt;/div&gt;</span></code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div><h3>Formulario de Registro</h3></div>
+    <p>Tiene campos extra: nombre, confirmación de contraseña y el medidor de fortaleza:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>index.html — panelRegistro</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="tag">&lt;div</span> <span class="at">id=</span><span class="val">"panelRegistro"</span> <span class="at">style=</span><span class="val">"display:none"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"login-header"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;h1&gt;</span>Crear cuenta 🚀<span class="tag">&lt;/h1&gt;</span>
+    <span class="tag">&lt;p&gt;</span>Regístrate para comenzar<span class="tag">&lt;/p&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="tag">&lt;form</span> <span class="at">id=</span><span class="val">"registerForm"</span><span class="tag">&gt;</span>
+
+    <span class="cm">&lt;!-- Campo nombre --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"form-group"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;label</span> <span class="at">for=</span><span class="val">"regNombre"</span><span class="tag">&gt;</span>Nombre completo<span class="tag">&lt;/label&gt;</span>
+      <span class="tag">&lt;input</span> <span class="at">type=</span><span class="val">"text"</span> <span class="at">id=</span><span class="val">"regNombre"</span> <span class="at">placeholder=</span><span class="val">"Juan Pérez"</span> <span class="at">required</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="at">class=</span><span class="val">"error-msg"</span> <span class="at">id=</span><span class="val">"nombreError"</span><span class="tag">&gt;&lt;/span&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+    <span class="cm">&lt;!-- Campo correo --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"form-group"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;label</span> <span class="at">for=</span><span class="val">"regEmail"</span><span class="tag">&gt;</span>Correo electrónico<span class="tag">&lt;/label&gt;</span>
+      <span class="tag">&lt;input</span> <span class="at">type=</span><span class="val">"email"</span> <span class="at">id=</span><span class="val">"regEmail"</span> <span class="at">placeholder=</span><span class="val">"tu@correo.com"</span> <span class="at">required</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="at">class=</span><span class="val">"error-msg"</span> <span class="at">id=</span><span class="val">"regEmailError"</span><span class="tag">&gt;&lt;/span&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+    <span class="cm">&lt;!-- Campo contraseña con medidor --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"form-group"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;label</span> <span class="at">for=</span><span class="val">"regPassword"</span><span class="tag">&gt;</span>Contraseña<span class="tag">&lt;/label&gt;</span>
+      <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"input-wrap"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;input</span> <span class="at">type=</span><span class="val">"password"</span> <span class="at">id=</span><span class="val">"regPassword"</span> <span class="at">placeholder=</span><span class="val">"Mín. 8 car, 1 mayúscula, 1 número"</span> <span class="at">required</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;button</span> <span class="at">type=</span><span class="val">"button"</span> <span class="at">id=</span><span class="val">"toggleRegPass"</span><span class="tag">&gt;</span>👁️<span class="tag">&lt;/button&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+      <span class="cm">&lt;!-- Barra de fortaleza --&gt;</span>
+      <span class="tag">&lt;div</span> <span class="at">id=</span><span class="val">"fortaleza"</span><span class="tag">&gt;&lt;div</span> <span class="at">id=</span><span class="val">"barraFuerza"</span><span class="tag">&gt;&lt;/div&gt;&lt;/div&gt;</span>
+      <span class="tag">&lt;span</span> <span class="at">id=</span><span class="val">"textoFuerza"</span><span class="tag">&gt;&lt;/span&gt;</span>
+      <span class="tag">&lt;span</span> <span class="at">class=</span><span class="val">"error-msg"</span> <span class="at">id=</span><span class="val">"regPassError"</span><span class="tag">&gt;&lt;/span&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+    <span class="cm">&lt;!-- Confirmación de contraseña --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"form-group"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;label</span> <span class="at">for=</span><span class="val">"regPasswordConf"</span><span class="tag">&gt;</span>Confirmar contraseña<span class="tag">&lt;/label&gt;</span>
+      <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"input-wrap"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;input</span> <span class="at">type=</span><span class="val">"password"</span> <span class="at">id=</span><span class="val">"regPasswordConf"</span> <span class="at">placeholder=</span><span class="val">"Repite tu contraseña"</span> <span class="at">required</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;button</span> <span class="at">type=</span><span class="val">"button"</span> <span class="at">id=</span><span class="val">"toggleRegPassConf"</span><span class="tag">&gt;</span>👁️<span class="tag">&lt;/button&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;span</span> <span class="at">class=</span><span class="val">"error-msg"</span> <span class="at">id=</span><span class="val">"regPassConfError"</span><span class="tag">&gt;&lt;/span&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+    <span class="tag">&lt;div</span> <span class="at">class=</span><span class="val">"alert"</span> <span class="at">id=</span><span class="val">"registerAlert"</span><span class="tag">&gt;&lt;/div&gt;</span>
+    <span class="tag">&lt;button</span> <span class="at">type=</span><span class="val">"submit"</span><span class="tag">&gt;</span>Crear cuenta<span class="tag">&lt;/button&gt;</span>
+  <span class="tag">&lt;/form&gt;</span>
+<span class="tag">&lt;/div&gt;</span></code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">💡</div><h3>¿Qué hace cada atributo?</h3></div>
+    <ul class="checklist">
+      <li><span class="check">✔</span><div><strong>type="email"</strong> — El navegador valida automáticamente el formato (con @)</div></li>
+      <li><span class="check">✔</span><div><strong>type="password"</strong> — Oculta los caracteres con puntos o asteriscos</div></li>
+      <li><span class="check">✔</span><div><strong>required</strong> — El formulario no se envía si el campo está vacío</div></li>
+      <li><span class="check">✔</span><div><strong>placeholder</strong> — Texto de ejemplo que desaparece al escribir</div></li>
+      <li><span class="check">✔</span><div><strong>for / id</strong> — Conecta el label con el input; hacer clic en el texto activa el campo</div></li>
+      <li><span class="check">✔</span><div><strong>style="display:none"</strong> — Oculta el panel de registro al cargar la página</div></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 3: CSS
+════════════════════════════════════════════ -->
+<div id="tab-css" class="section">
+  <p class="sec-title">Paso 2 — CSS</p>
+  <p class="sec-sub">Dale estilo visual a los formularios y las pestañas de alternancia.</p>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div><h3>Reset y Variables</h3></div>
+    <p>Empezamos borrando estilos por defecto del navegador y definiendo colores con variables:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>style.css — Parte 1</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="tag">:root</span> {
+  <span class="prop">--color-primario</span>: <span class="val">#6C63FF</span>;
+  <span class="prop">--color-fondo</span>:    <span class="val">#f0f2f5</span>;
+  <span class="prop">--color-carta</span>:    <span class="val">#ffffff</span>;
+  <span class="prop">--color-texto</span>:    <span class="val">#333333</span>;
+  <span class="prop">--color-error</span>:    <span class="val">#e53935</span>;
+  <span class="prop">--color-exito</span>:    <span class="val">#43a047</span>;
+  <span class="prop">--radio-borde</span>:    <span class="val">12px</span>;
+}
+
+<span class="tag">*</span> { <span class="prop">box-sizing</span>: <span class="val">border-box</span>; <span class="prop">margin</span>: <span class="val">0</span>; <span class="prop">padding</span>: <span class="val">0</span>; }
+
+<span class="tag">body</span> {
+  <span class="prop">font-family</span>:      <span class="val">'Segoe UI', Arial, sans-serif</span>;
+  <span class="prop">background-color</span>: <span class="val">var(--color-fondo)</span>;
+  <span class="prop">min-height</span>:       <span class="val">100vh</span>;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div><h3>Centrar la tarjeta con Flexbox</h3></div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>style.css — Parte 2</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="tag">.login-container</span> {
+  <span class="prop">display</span>:         <span class="val">flex</span>;
+  <span class="prop">flex-direction</span>:  <span class="val">column</span>;   <span class="cm">/* apila tarjeta y panel de usuarios */</span>
+  <span class="prop">align-items</span>:     <span class="val">center</span>;
+  <span class="prop">justify-content</span>: <span class="val">center</span>;
+  <span class="prop">min-height</span>:      <span class="val">100vh</span>;
+  <span class="prop">padding</span>:         <span class="val">20px</span>;
+  <span class="prop">gap</span>:             <span class="val">20px</span>;     <span class="cm">/* espacio entre tarjeta y panel */</span>
+}
+
+<span class="tag">.login-card</span> {
+  <span class="prop">background</span>:    <span class="val">var(--color-carta)</span>;
+  <span class="prop">border-radius</span>: <span class="val">var(--radio-borde)</span>;
+  <span class="prop">box-shadow</span>:    <span class="val">0 8px 32px rgba(0,0,0,.12)</span>;
+  <span class="prop">padding</span>:       <span class="val">40px</span>;
+  <span class="prop">width</span>:         <span class="val">100%</span>;
+  <span class="prop">max-width</span>:     <span class="val">420px</span>;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div><h3>Pestañas Login / Registro</h3></div>
+    <p>Las pestañas son dos botones dentro de un contenedor con fondo gris claro:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>style.css — Pestañas</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="tag">.tab-switcher</span> {
+  <span class="prop">display</span>:       <span class="val">flex</span>;
+  <span class="prop">background</span>:    <span class="val">#f0f2f5</span>;
+  <span class="prop">border-radius</span>: <span class="val">10px</span>;
+  <span class="prop">padding</span>:       <span class="val">4px</span>;
+  <span class="prop">margin-bottom</span>: <span class="val">28px</span>;
+}
+
+<span class="tag">.tab-switcher .tab-btn</span> {
+  <span class="prop">flex</span>:          <span class="val">1</span>;           <span class="cm">/* cada botón ocupa mitad */</span>
+  <span class="prop">padding</span>:       <span class="val">10px</span>;
+  <span class="prop">border</span>:        <span class="val">none</span>;
+  <span class="prop">background</span>:    <span class="val">transparent</span>;
+  <span class="prop">border-radius</span>: <span class="val">8px</span>;
+  <span class="prop">font-weight</span>:   <span class="val">600</span>;
+  <span class="prop">color</span>:         <span class="val">#777</span>;
+  <span class="prop">cursor</span>:        <span class="val">pointer</span>;
+  <span class="prop">transition</span>:    <span class="val">all .2s</span>;
+}
+
+<span class="tag">.tab-switcher .tab-btn.active</span> {
+  <span class="prop">background</span>:  <span class="val">var(--color-primario)</span>;
+  <span class="prop">color</span>:       <span class="val">white</span>;
+  <span class="prop">box-shadow</span>:  <span class="val">0 2px 8px rgba(108,99,255,.35)</span>;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">4</div><h3>Inputs y Botón de envío</h3></div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>style.css — Inputs</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="tag">input[type="email"],
+input[type="password"],
+input[type="text"]</span> {
+  <span class="prop">width</span>:         <span class="val">100%</span>;
+  <span class="prop">padding</span>:       <span class="val">12px 14px</span>;
+  <span class="prop">border</span>:        <span class="val">2px solid #e0e0e0</span>;
+  <span class="prop">border-radius</span>: <span class="val">8px</span>;
+  <span class="prop">font-size</span>:     <span class="val">1rem</span>;
+  <span class="prop">outline</span>:       <span class="val">none</span>;
+  <span class="prop">transition</span>:    <span class="val">border-color .25s</span>;
+}
+
+<span class="tag">input:focus</span> {
+  <span class="prop">border-color</span>: <span class="val">var(--color-primario)</span>;
+  <span class="prop">box-shadow</span>:   <span class="val">0 0 0 3px rgba(108,99,255,.15)</span>;
+}
+
+<span class="tag">button[type="submit"]</span> {
+  <span class="prop">width</span>:         <span class="val">100%</span>;
+  <span class="prop">padding</span>:       <span class="val">13px</span>;
+  <span class="prop">background</span>:    <span class="val">var(--color-primario)</span>;
+  <span class="prop">color</span>:         <span class="val">white</span>;
+  <span class="prop">border</span>:        <span class="val">none</span>;
+  <span class="prop">border-radius</span>: <span class="val">8px</span>;
+  <span class="prop">font-size</span>:     <span class="val">1rem</span>;
+  <span class="prop">font-weight</span>:   <span class="val">700</span>;
+  <span class="prop">cursor</span>:        <span class="val">pointer</span>;
+  <span class="prop">margin-top</span>:    <span class="val">10px</span>;
+  <span class="prop">transition</span>:    <span class="val">background .2s, transform .1s</span>;
+}
+
+<span class="tag">button[type="submit"]:hover</span>  { <span class="prop">background</span>: <span class="val">#5a52d5</span>; }
+<span class="tag">button[type="submit"]:active</span> { <span class="prop">transform</span>: <span class="val">scale(.97)</span>; }
+
+<span class="tag">.error-msg</span> { <span class="prop">color</span>: <span class="val">var(--color-error)</span>; <span class="prop">font-size</span>: <span class="val">.8rem</span>; <span class="prop">margin-top</span>: <span class="val">4px</span>; <span class="prop">display</span>: <span class="val">block</span>; }
+
+<span class="tag">.alert</span>         { <span class="prop">display</span>: <span class="val">none</span>; <span class="prop">padding</span>: <span class="val">10px 14px</span>; <span class="prop">border-radius</span>: <span class="val">8px</span>; <span class="prop">font-size</span>: <span class="val">.88rem</span>; <span class="prop">margin-bottom</span>: <span class="val">14px</span>; }
+<span class="tag">.alert.error</span>   { <span class="prop">background</span>: <span class="val">#ffebee</span>; <span class="prop">color</span>: <span class="val">var(--color-error)</span>; <span class="prop">display</span>: <span class="val">block</span>; }
+<span class="tag">.alert.success</span> { <span class="prop">background</span>: <span class="val">#e8f5e9</span>; <span class="prop">color</span>: <span class="val">var(--color-exito)</span>; <span class="prop">display</span>: <span class="val">block</span>; }</code></pre>
+    </div>
+  </div>
+
+  <div class="tip">
+    <span class="icon">💡</span>
+    <span><strong>Flexbox</strong> es la herramienta más usada para centrar y distribuir elementos. Si quieres profundizar, busca "CSS Flexbox Froggy" — es un juego para aprenderlo.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 4: JAVASCRIPT
+════════════════════════════════════════════ -->
+<div id="tab-js" class="section">
+  <p class="sec-title">Paso 3 — JavaScript base</p>
+  <p class="sec-sub">Capturar referencias, mostrar/ocultar contraseña y manejar el formulario de login.</p>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div><h3>Capturar referencias del DOM</h3></div>
+    <p>Usamos <code>getElementById</code> para obtener referencias a los elementos del HTML:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>script.js — Parte 1</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="cm">// ── Login ──</span>
+<span class="kw">const</span> form        = <span class="fn">document.getElementById</span>(<span class="str">'loginForm'</span>);
+<span class="kw">const</span> emailInput  = <span class="fn">document.getElementById</span>(<span class="str">'email'</span>);
+<span class="kw">const</span> passInput   = <span class="fn">document.getElementById</span>(<span class="str">'password'</span>);
+<span class="kw">const</span> loginAlert  = <span class="fn">document.getElementById</span>(<span class="str">'loginAlert'</span>);
+<span class="kw">const</span> emailError  = <span class="fn">document.getElementById</span>(<span class="str">'emailError'</span>);
+<span class="kw">const</span> passError   = <span class="fn">document.getElementById</span>(<span class="str">'passError'</span>);
+<span class="kw">const</span> toggleBtn   = <span class="fn">document.getElementById</span>(<span class="str">'togglePass'</span>);
+
+<span class="cm">// ── Registro ──</span>
+<span class="kw">const</span> registerForm    = <span class="fn">document.getElementById</span>(<span class="str">'registerForm'</span>);
+<span class="kw">const</span> regNombre       = <span class="fn">document.getElementById</span>(<span class="str">'regNombre'</span>);
+<span class="kw">const</span> regEmail        = <span class="fn">document.getElementById</span>(<span class="str">'regEmail'</span>);
+<span class="kw">const</span> regPassword     = <span class="fn">document.getElementById</span>(<span class="str">'regPassword'</span>);
+<span class="kw">const</span> regPasswordConf = <span class="fn">document.getElementById</span>(<span class="str">'regPasswordConf'</span>);
+<span class="kw">const</span> registerAlert   = <span class="fn">document.getElementById</span>(<span class="str">'registerAlert'</span>);</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div><h3>Mostrar / Ocultar contraseña</h3></div>
+    <p>Creamos una función reutilizable que recibe el botón y el input. Así sirve para los tres campos de contraseña:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>script.js — toggles</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="kw">function</span> <span class="fn">crearToggle</span>(btn, input) {
+  btn.<span class="fn">addEventListener</span>(<span class="str">'click'</span>, () => {
+    <span class="kw">if</span> (input.type === <span class="str">'password'</span>) {
+      input.type = <span class="str">'text'</span>;
+      btn.textContent = <span class="str">'🙈'</span>;
+    } <span class="kw">else</span> {
+      input.type = <span class="str">'password'</span>;
+      btn.textContent = <span class="str">'👁️'</span>;
+    }
+  });
+}
+
+<span class="cm">// Aplicar a los tres campos de contraseña</span>
+<span class="fn">crearToggle</span>(toggleBtn,    passInput);
+<span class="fn">crearToggle</span>(toggleRegBtn, regPassword);
+<span class="fn">crearToggle</span>(toggleRegConfBtn, regPasswordConf);</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div><h3>Alternar entre Login y Registro</h3></div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>script.js — mostrarTab</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="kw">function</span> <span class="fn">mostrarTab</span>(tab) {
+  <span class="kw">const</span> panelLogin    = <span class="fn">document.getElementById</span>(<span class="str">'panelLogin'</span>);
+  <span class="kw">const</span> panelRegistro = <span class="fn">document.getElementById</span>(<span class="str">'panelRegistro'</span>);
+  <span class="kw">const</span> tabLogin      = <span class="fn">document.getElementById</span>(<span class="str">'tabLogin'</span>);
+  <span class="kw">const</span> tabRegister   = <span class="fn">document.getElementById</span>(<span class="str">'tabRegister'</span>);
+
+  <span class="kw">if</span> (tab === <span class="str">'login'</span>) {
+    panelLogin.style.display    = <span class="str">'block'</span>;
+    panelRegistro.style.display = <span class="str">'none'</span>;
+    tabLogin.classList.<span class="fn">add</span>(<span class="str">'active'</span>);
+    tabRegister.classList.<span class="fn">remove</span>(<span class="str">'active'</span>);
+  } <span class="kw">else</span> {
+    panelLogin.style.display    = <span class="str">'none'</span>;
+    panelRegistro.style.display = <span class="str">'block'</span>;
+    tabLogin.classList.<span class="fn">remove</span>(<span class="str">'active'</span>);
+    tabRegister.classList.<span class="fn">add</span>(<span class="str">'active'</span>);
+  }
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">4</div><h3>Lógica del formulario de Login</h3></div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>script.js — submit login</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code>form.<span class="fn">addEventListener</span>(<span class="str">'submit'</span>, <span class="kw">function</span>(e) {
+  e.<span class="fn">preventDefault</span>();
+
+  <span class="cm">// 1. Limpiar errores anteriores</span>
+  emailError.textContent = <span class="str">''</span>;
+  passError.textContent  = <span class="str">''</span>;
+  loginAlert.className   = <span class="str">'alert'</span>;
+
+  <span class="cm">// 2. Obtener los valores</span>
+  <span class="kw">const</span> email    = emailInput.value.<span class="fn">trim</span>().<span class="fn">toLowerCase</span>();
+  <span class="kw">const</span> password = passInput.value;
+
+  <span class="cm">// 3. Validar campos vacíos</span>
+  <span class="kw">let</span> hayError = <span class="num">false</span>;
+  <span class="kw">if</span> (!email) { emailError.textContent = <span class="str">'⚠️ El correo es obligatorio'</span>; hayError = <span class="num">true</span>; }
+  <span class="kw">if</span> (!password) { passError.textContent = <span class="str">'⚠️ La contraseña es obligatoria'</span>; hayError = <span class="num">true</span>; }
+  <span class="kw">if</span> (hayError) <span class="kw">return</span>;
+
+  <span class="cm">// 4. Buscar en todos los usuarios (fijos + localStorage)</span>
+  <span class="kw">const</span> usuario = <span class="fn">obtenerUsuarios</span>().<span class="fn">find</span>(u =>
+    u.email === email && u.password === password
+  );
+
+  <span class="cm">// 5. Mostrar resultado</span>
+  <span class="kw">if</span> (usuario) {
+    loginAlert.className   = <span class="str">'alert success'</span>;
+    loginAlert.textContent = <span class="str">`✅ ¡Bienvenido, ${usuario.nombre}! Redirigiendo...`</span>;
+    <span class="fn">setTimeout</span>(() => window.location.href = <span class="str">'dashboard.html'</span>, <span class="num">1500</span>);
+  } <span class="kw">else</span> {
+    loginAlert.className   = <span class="str">'alert error'</span>;
+    loginAlert.textContent = <span class="str">'❌ Correo o contraseña incorrectos'</span>;
+  }
+});</code></pre>
+    </div>
+  </div>
+
+  <div class="info">
+    <span class="icon">🧠</span>
+    <span><strong>e.preventDefault()</strong> es fundamental: evita que el formulario recargue la página al enviarse, lo que borraría el mensaje de error antes de que el usuario lo vea.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 5: REGISTRO (NUEVO)
+════════════════════════════════════════════ -->
+<div id="tab-registro" class="section">
+  <p class="sec-title">📝 Registro con localStorage</p>
+  <p class="sec-sub">Cómo guardar usuarios nuevos en el navegador y validar el formulario de registro.</p>
+
+  <div class="new">
+    <span class="icon">✨</span>
+    <span><strong>Nueva sección:</strong> Aquí aprenderás a usar <code>localStorage</code> para persistir usuarios registrados, combinándolos con los usuarios fijos del array original.</span>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div><h3>¿Qué es localStorage?</h3></div>
+    <p>Es un almacenamiento clave-valor del navegador que sobrevive cuando cierras y vuelves a abrir la página:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>localStorage — conceptos básicos</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="cm">// Guardar un valor (solo admite strings)</span>
+localStorage.<span class="fn">setItem</span>(<span class="str">'clave'</span>, <span class="str">'valor'</span>);
+
+<span class="cm">// Guardar un objeto → convertir a JSON primero</span>
+<span class="kw">const</span> datos = { nombre: <span class="str">'Ana'</span>, email: <span class="str">'ana@correo.com'</span> };
+localStorage.<span class="fn">setItem</span>(<span class="str">'usuario'</span>, JSON.<span class="fn">stringify</span>(datos));
+
+<span class="cm">// Leer un valor</span>
+<span class="kw">const</span> texto = localStorage.<span class="fn">getItem</span>(<span class="str">'clave'</span>); <span class="cm">// → 'valor'</span>
+
+<span class="cm">// Leer un objeto → convertir de JSON</span>
+<span class="kw">const</span> obj = JSON.<span class="fn">parse</span>(localStorage.<span class="fn">getItem</span>(<span class="str">'usuario'</span>));
+
+<span class="cm">// Eliminar un elemento</span>
+localStorage.<span class="fn">removeItem</span>(<span class="str">'clave'</span>);
+
+<span class="cm">// Limpiar todo</span>
+localStorage.<span class="fn">clear</span>();</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div><h3>Funciones para manejar usuarios</h3></div>
+    <p>Tres funciones que abstraen toda la lógica de leer, guardar y verificar usuarios:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>script.js — funciones localStorage</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="cm">// Usuarios fijos — siempre disponibles, no se guardan en localStorage</span>
+<span class="kw">const</span> USUARIOS_DEFAULT = [
+  { nombre: <span class="str">'Admin'</span>,      email: <span class="str">'elprofe@gmail.com'</span>,      password: <span class="str">'Admin123'</span> },
+  { nombre: <span class="str">'Estudiante'</span>, email: <span class="str">'estudiante@correo.com'</span>, password: <span class="str">'Pass456'</span>  }
+];
+
+<span class="cm">/**
+ * Devuelve TODOS los usuarios: fijos + los guardados en localStorage
+ */</span>
+<span class="kw">function</span> <span class="fn">obtenerUsuarios</span>() {
+  <span class="kw">const</span> guardados = JSON.<span class="fn">parse</span>(localStorage.<span class="fn">getItem</span>(<span class="str">'usuarios'</span>) || <span class="str">'[]'</span>);
+  <span class="kw">return</span> [...USUARIOS_DEFAULT, ...guardados]; <span class="cm">// spread operator fusiona ambos arrays</span>
+}
+
+<span class="cm">/**
+ * Guarda un nuevo usuario al final de la lista en localStorage
+ */</span>
+<span class="kw">function</span> <span class="fn">guardarUsuario</span>(nuevoUsuario) {
+  <span class="kw">const</span> guardados = JSON.<span class="fn">parse</span>(localStorage.<span class="fn">getItem</span>(<span class="str">'usuarios'</span>) || <span class="str">'[]'</span>);
+  guardados.<span class="fn">push</span>(nuevoUsuario);
+  localStorage.<span class="fn">setItem</span>(<span class="str">'usuarios'</span>, JSON.<span class="fn">stringify</span>(guardados));
+}
+
+<span class="cm">/**
+ * Verifica si un correo ya está registrado (en cualquiera de las listas)
+ */</span>
+<span class="kw">function</span> <span class="fn">emailExiste</span>(email) {
+  <span class="kw">return</span> <span class="fn">obtenerUsuarios</span>().<span class="fn">some</span>(u => u.email === email.<span class="fn">toLowerCase</span>());
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div><h3>Validaciones del formulario de registro</h3></div>
+    <p>Antes de guardar, verificamos que todos los datos sean correctos. El orden importa — paramos en el primer error:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>script.js — validaciones de registro</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code>registerForm.<span class="fn">addEventListener</span>(<span class="str">'submit'</span>, <span class="kw">function</span>(e) {
+  e.<span class="fn">preventDefault</span>();
+
+  <span class="kw">const</span> nombre    = regNombre.value.<span class="fn">trim</span>();
+  <span class="kw">const</span> email     = regEmail.value.<span class="fn">trim</span>().<span class="fn">toLowerCase</span>();
+  <span class="kw">const</span> password  = regPassword.value;
+  <span class="kw">const</span> passwordC = regPasswordConf.value;
+  <span class="kw">let</span> hayError = <span class="num">false</span>;
+
+  <span class="cm">// Validar nombre</span>
+  <span class="kw">if</span> (!nombre || nombre.length < <span class="num">2</span>) {
+    nombreError.textContent = <span class="str">'⚠️ Nombre demasiado corto'</span>;
+    hayError = <span class="num">true</span>;
+  }
+
+  <span class="cm">// Validar correo no duplicado</span>
+  <span class="kw">if</span> (!<span class="fn">validarEmail</span>(email)) {
+    regEmailError.textContent = <span class="str">'⚠️ Formato de correo no válido'</span>;
+    hayError = <span class="num">true</span>;
+  } <span class="kw">else if</span> (<span class="fn">emailExiste</span>(email)) {
+    regEmailError.textContent = <span class="str">'⚠️ Este correo ya está registrado'</span>;
+    hayError = <span class="num">true</span>;
+  }
+
+  <span class="cm">// Validar seguridad de contraseña</span>
+  <span class="kw">const</span> erroresPass = <span class="fn">validarPassword</span>(password);
+  <span class="kw">if</span> (erroresPass.length > <span class="num">0</span>) {
+    regPassError.textContent = <span class="str">'⚠️ '</span> + erroresPass.<span class="fn">join</span>(<span class="str">' · '</span>);
+    hayError = <span class="num">true</span>;
+  }
+
+  <span class="cm">// Validar que ambas contraseñas coincidan</span>
+  <span class="kw">if</span> (password !== passwordC) {
+    regPassConfError.textContent = <span class="str">'⚠️ Las contraseñas no coinciden'</span>;
+    hayError = <span class="num">true</span>;
+  }
+
+  <span class="kw">if</span> (hayError) <span class="kw">return</span>; <span class="cm">// detener si hay cualquier error</span>
+
+  <span class="cm">// ✅ Todo válido — guardar y mostrar éxito</span>
+  <span class="fn">guardarUsuario</span>({ nombre, email, password });
+  registerAlert.className   = <span class="str">'alert success'</span>;
+  registerAlert.textContent = <span class="str">`✅ ¡Cuenta creada! Bienvenido, ${nombre}.`</span>;
+
+  registerForm.<span class="fn">reset</span>();
+  <span class="fn">setTimeout</span>(() => <span class="fn">mostrarTab</span>(<span class="str">'login'</span>), <span class="num">2000</span>); <span class="cm">// redirigir al login</span>
+});</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">4</div><h3>Ver usuarios guardados en el navegador</h3></div>
+    <p>Puedes inspeccionar lo que guarda tu código abriendo las DevTools del navegador:</p>
+    <ul class="checklist">
+      <li><span class="check">1️⃣</span><div>Presiona <strong>F12</strong> para abrir DevTools</div></li>
+      <li><span class="check">2️⃣</span><div>Ve a la pestaña <strong>Application</strong> (Chrome) o <strong>Storage</strong> (Firefox)</div></li>
+      <li><span class="check">3️⃣</span><div>Abre <strong>Local Storage → localhost</strong></div></li>
+      <li><span class="check">4️⃣</span><div>Verás la clave <code>usuarios</code> con el array JSON de tus registros</div></li>
+      <li><span class="check">5️⃣</span><div>Puedes editar o borrar valores directamente desde ahí para probar</div></li>
+    </ul>
+  </div>
+
+  <div class="danger">
+    <span class="icon">🚨</span>
+    <span><strong>¡Nunca en producción!</strong> Guardar contraseñas en texto plano en localStorage es inseguro. En un proyecto real se usan <strong>bcrypt</strong> para hashear contraseñas y un servidor con base de datos para guardarlas.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 6: VALIDACIÓN
+════════════════════════════════════════════ -->
+<div id="tab-validacion" class="section">
+  <p class="sec-title">Paso 4 — Validaciones avanzadas</p>
+  <p class="sec-sub">Mejora la experiencia y seguridad con validaciones más completas.</p>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div><h3>Validar formato de correo</h3></div>
+    <p>Un correo válido debe tener el formato <code>usuario@dominio.com</code>. Usamos una expresión regular (<strong>Regex</strong>):</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>Validación de email</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="kw">function</span> <span class="fn">validarEmail</span>(email) {
+  <span class="cm">// Expresión regular para formato de correo</span>
+  <span class="kw">const</span> regex = <span class="val">/^[^\s@]+@[^\s@]+\.[^\s@]+$/</span>;
+  <span class="kw">return</span> regex.<span class="fn">test</span>(email);
+}
+
+<span class="cm">// Uso:</span>
+<span class="fn">validarEmail</span>(<span class="str">'usuario@correo.com'</span>); <span class="cm">// → true  ✅</span>
+<span class="fn">validarEmail</span>(<span class="str">'testmail.com'</span>);        <span class="cm">// → false ❌ (sin @)</span>
+<span class="fn">validarEmail</span>(<span class="str">'test@mailcom'</span>);        <span class="cm">// → false ❌ (sin .)</span></code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div><h3>Validar seguridad de contraseña</h3></div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>Validación de contraseña</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="kw">function</span> <span class="fn">validarPassword</span>(pass) {
+  <span class="kw">const</span> errores = [];
+
+  <span class="kw">if</span> (pass.length < <span class="num">8</span>)
+    errores.<span class="fn">push</span>(<span class="str">'Mínimo 8 caracteres'</span>);
+
+  <span class="kw">if</span> (!<span class="val">/[A-Z]/</span>.<span class="fn">test</span>(pass))
+    errores.<span class="fn">push</span>(<span class="str">'Al menos una mayúscula'</span>);
+
+  <span class="kw">if</span> (!<span class="val">/[0-9]/</span>.<span class="fn">test</span>(pass))
+    errores.<span class="fn">push</span>(<span class="str">'Al menos un número'</span>);
+
+  <span class="kw">return</span> errores; <span class="cm">// Array vacío = contraseña válida</span>
+}
+
+<span class="fn">validarPassword</span>(<span class="str">'hola'</span>);     <span class="cm">// → ['Mínimo 8 caracteres', 'Al menos una mayúscula', ...]</span>
+<span class="fn">validarPassword</span>(<span class="str">'Segura123'</span>); <span class="cm">// → [] ✅ válida</span></code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div><h3>Indicador de fortaleza de contraseña</h3></div>
+    <p>Una barra visual que le dice al usuario qué tan segura es su contraseña mientras escribe:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span>Medidor de seguridad</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><code><span class="cm">/* Ya está en el HTML dentro del form-group de regPassword: */</span>
+<span class="cm">&lt;div id="fortaleza"&gt;&lt;div id="barraFuerza"&gt;&lt;/div&gt;&lt;/div&gt;</span>
+<span class="cm">&lt;span id="textoFuerza"&gt;&lt;/span&gt;</span>
+
+<span class="cm">/* En el JS: */</span>
+<span class="kw">const</span> barraFuerza = <span class="fn">document.getElementById</span>(<span class="str">'barraFuerza'</span>);
+<span class="kw">const</span> textoFuerza = <span class="fn">document.getElementById</span>(<span class="str">'textoFuerza'</span>);
+
+regPassword.<span class="fn">addEventListener</span>(<span class="str">'input'</span>, () => {
+  <span class="kw">const</span> errores = <span class="fn">validarPassword</span>(regPassword.value);
+  <span class="kw">const</span> puntaje = <span class="num">3</span> - errores.length; <span class="cm">// 0=nada, 1=débil, 2=regular, 3=fuerte</span>
+
+  <span class="kw">const</span> config = [
+    { pct: <span class="str">'0%'</span>,   color: <span class="str">'#e0e0e0'</span>, label: <span class="str">''</span>           },
+    { pct: <span class="str">'33%'</span>,  color: <span class="str">'#e53935'</span>, label: <span class="str">'😬 Débil'</span>   },
+    { pct: <span class="str">'66%'</span>,  color: <span class="str">'#ffb300'</span>, label: <span class="str">'😐 Regular'</span> },
+    { pct: <span class="str">'100%'</span>, color: <span class="str">'#43a047'</span>, label: <span class="str">'💪 Fuerte'</span>  },
+  ][puntaje];
+
+  barraFuerza.style.width      = config.pct;
+  barraFuerza.style.background = config.color;
+  textoFuerza.textContent      = config.label;
+});</code></pre>
+    </div>
+  </div>
+
+  <div class="danger">
+    <span class="icon">🚨</span>
+    <span><strong>Seguridad importante:</strong> La validación en JavaScript solo mejora la experiencia de usuario. <strong>Nunca</strong> es suficiente por sí sola — el servidor también debe validar todos los datos recibidos.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 7: DEMO
+════════════════════════════════════════════ -->
+<div id="tab-demo" class="section">
+  <p class="sec-title">🚀 Demo funcional</p>
+  <p class="sec-sub">Prueba el registro y el login aquí mismo. Los usuarios registrados se guardan en localStorage.</p>
+
+  <!-- Demo Registro -->
+  <div class="demo-wrap" style="margin-bottom:24px;">
+    <div class="demo-box">
+      <h4>📝 Registrar usuario</h4>
+      <input class="demo-input" id="demoRegNombre" type="text" placeholder="Nombre completo">
+      <input class="demo-input" id="demoRegEmail" type="email" placeholder="Correo electrónico">
+      <input class="demo-input" id="demoRegPass" type="password" placeholder="Contraseña (Ej: MiClave1)">
+      <button class="demo-btn" onclick="demoRegistrar()">Crear cuenta →</button>
+      <p class="demo-msg" id="demoRegMsg"></p>
+    </div>
+    <div class="demo-box" style="justify-content:flex-start;align-items:flex-start;">
+      <h4>👥 Usuarios en localStorage</h4>
+      <ul class="demo-users-list" id="demoListaUsuarios"></ul>
+      <button class="demo-btn secondary" style="margin-top:8px;width:100%;" onclick="demoLimpiar()">🗑️ Limpiar registros</button>
+    </div>
+  </div>
+
+  <!-- Demo Login -->
+  <div class="demo-wrap">
+    <div class="demo-box">
+      <h4>🔐 Probar login</h4>
+      <input class="demo-input" id="demoEmail" type="email" placeholder="Correo electrónico">
+      <input class="demo-input" id="demoPass"  type="password" placeholder="Contraseña">
+      <button class="demo-btn" onclick="demoLogin()">Ingresar →</button>
+      <p class="demo-msg" id="demoMsg"></p>
+    </div>
+    <div class="demo-box" style="justify-content:flex-start;align-items:flex-start">
+      <h4>Usuarios de prueba fijos</h4>
+      <div style="width:100%">
+        <div style="background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.3);border-radius:8px;padding:12px;margin-bottom:10px;font-size:.83rem;">
+          <div style="color:#a9a3ff;font-weight:700;margin-bottom:4px;">👤 Admin</div>
+          <div>📧 elprofe@gmail.com</div>
+          <div>🔑 Admin123</div>
+        </div>
+        <div style="background:rgba(67,217,162,.07);border:1px solid rgba(67,217,162,.25);border-radius:8px;padding:12px;font-size:.83rem;">
+          <div style="color:#43D9A2;font-weight:700;margin-bottom:4px;">👤 Estudiante</div>
+          <div>📧 estudiante@correo.com</div>
+          <div>🔑 Pass456</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step" style="margin-top:24px;">
+    <div class="step-header"><div class="step-num">🎯</div><h3>Retos para practicar</h3></div>
+    <ul class="checklist">
+      <li><span class="check">🔲</span><div><strong>Reto 1 (Fácil):</strong> Agrega un campo de "Nombre de usuario" al formulario de registro</div></li>
+      <li><span class="check">🔲</span><div><strong>Reto 2 (Medio):</strong> Agrega un checkbox "Recuérdame" que guarde el correo en localStorage al hacer login</div></li>
+      <li><span class="check">🔲</span><div><strong>Reto 3 (Medio):</strong> Muestra el nombre del usuario en el dashboard después del login</div></li>
+      <li><span class="check">🔲</span><div><strong>Reto 4 (Difícil):</strong> Agrega un botón "Cerrar sesión" en el dashboard que borre la sesión activa</div></li>
+      <li><span class="check">🔲</span><div><strong>Reto 5 (Experto):</strong> Investiga cómo hacer el registro con Node.js + Express + bcrypt en el backend</div></li>
+    </ul>
+  </div>
+
+  <div class="tip">
+    <span class="icon">🚀</span>
+    <span><strong>¡Siguiente nivel!</strong> Una vez domines esto, aprende sobre <strong>JWT (JSON Web Tokens)</strong> y <strong>bcrypt</strong> para hacer autenticación segura y profesional con backend.</span>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ─── Navegación entre tabs de la guía ──────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (id === 'demo') demoRenderizarUsuarios();
+}
+
+// ─── Copiar código ─────────────────────────────────────────
+function copyCode(btn) {
+  const pre  = btn.closest('.code-wrap').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✅ Copiado';
+    setTimeout(() => btn.textContent = 'Copiar', 2000);
+  });
+}
+
+// ─── Validaciones para la demo ─────────────────────────────
+function validarEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+function validarPassword(pass) {
+  const errores = [];
+  if (pass.length < 8)     errores.push('Mínimo 8 caracteres');
+  if (!/[A-Z]/.test(pass)) errores.push('Al menos una mayúscula');
+  if (!/[0-9]/.test(pass)) errores.push('Al menos un número');
+  return errores;
+}
+
+// ─── Usuarios fijos de la demo ─────────────────────────────
+const USUARIOS_DEFAULT = [
+  { nombre: 'Admin',      email: 'elprofe@gmail.com',      password: 'Admin123' },
+  { nombre: 'Estudiante', email: 'estudiante@correo.com', password: 'Pass456'  }
+];
+
+function demoObtenerUsuarios() {
+  const guardados = JSON.parse(localStorage.getItem('usuarios_demo') || '[]');
+  return [...USUARIOS_DEFAULT, ...guardados];
+}
+function demoGuardarUsuario(u) {
+  const guardados = JSON.parse(localStorage.getItem('usuarios_demo') || '[]');
+  guardados.push(u);
+  localStorage.setItem('usuarios_demo', JSON.stringify(guardados));
+}
+function demoEmailExiste(email) {
+  return demoObtenerUsuarios().some(u => u.email === email.toLowerCase());
+}
+
+// ─── Demo: registrar ───────────────────────────────────────
+function demoRegistrar() {
+  const nombre   = document.getElementById('demoRegNombre').value.trim();
+  const email    = document.getElementById('demoRegEmail').value.trim().toLowerCase();
+  const password = document.getElementById('demoRegPass').value;
+  const msg      = document.getElementById('demoRegMsg');
+
+  msg.className = 'demo-msg';
+
+  if (!nombre || nombre.length < 2) { msg.className += ' error'; msg.textContent = '⚠️ Nombre muy corto'; return; }
+  if (!validarEmail(email))         { msg.className += ' error'; msg.textContent = '⚠️ Correo inválido'; return; }
+  if (demoEmailExiste(email))       { msg.className += ' error'; msg.textContent = '⚠️ Correo ya registrado'; return; }
+  const errs = validarPassword(password);
+  if (errs.length > 0)              { msg.className += ' error'; msg.textContent = '⚠️ ' + errs.join(' · '); return; }
+
+  demoGuardarUsuario({ nombre, email, password });
+  msg.textContent = `✅ ¡${nombre} registrado correctamente!`;
+  document.getElementById('demoRegNombre').value = '';
+  document.getElementById('demoRegEmail').value  = '';
+  document.getElementById('demoRegPass').value   = '';
+  demoRenderizarUsuarios();
+}
+
+// ─── Demo: login ───────────────────────────────────────────
+function demoLogin() {
+  const email    = document.getElementById('demoEmail').value.trim().toLowerCase();
+  const password = document.getElementById('demoPass').value;
+  const msg      = document.getElementById('demoMsg');
+
+  const usuario = demoObtenerUsuarios().find(u => u.email === email && u.password === password);
+  if (usuario) {
+    msg.className   = 'demo-msg';
+    msg.textContent = `✅ ¡Bienvenido, ${usuario.nombre}!`;
+  } else {
+    msg.className   = 'demo-msg error';
+    msg.textContent = '❌ Correo o contraseña incorrectos';
+  }
+}
+
+// ─── Demo: renderizar lista ────────────────────────────────
+function demoRenderizarUsuarios() {
+  const lista    = document.getElementById('demoListaUsuarios');
+  if (!lista) return;
+  const guardados = JSON.parse(localStorage.getItem('usuarios_demo') || '[]');
+
+  lista.innerHTML = guardados.length === 0
+    ? '<li style="padding:8px 0;"><span class="empty-msg">Sin usuarios registrados aún</span></li>'
+    : '';
+
+  guardados.forEach((u, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div>
+        <span class="u-name">${u.nombre}</span><br>
+        <span class="u-email">${u.email}</span>
+      </div>
+      <button onclick="demoEliminar(${i})" title="Eliminar">✕</button>
+    `;
+    lista.appendChild(li);
+  });
+}
+
+function demoEliminar(i) {
+  const guardados = JSON.parse(localStorage.getItem('usuarios_demo') || '[]');
+  guardados.splice(i, 1);
+  localStorage.setItem('usuarios_demo', JSON.stringify(guardados));
+  demoRenderizarUsuarios();
+}
+
+function demoLimpiar() {
+  if (confirm('¿Eliminar todos los usuarios registrados en la demo?')) {
+    localStorage.removeItem('usuarios_demo');
+    demoRenderizarUsuarios();
+  }
+}
+
+// Renderizar al cargar si estamos en la pestaña demo
+demoRenderizarUsuarios();
+</script>
+</body>
+</html>

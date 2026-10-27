@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bitnotas — Servicios</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* ========== SERVICIOS: HERRAMIENTAS ORBITANDO UN SOL ========== */
+        .sv-intro { color: var(--verde-oscuro, #075E3F); font-weight: 600; margin-bottom: 14px; }
+
+        .zona { position: relative; max-width: 980px; margin: 0 auto 40px; }
+
+        .escenario {
+            --R: 170px;
+            position: relative;
+            height: 560px;
+            border-radius: 28px;
+            background:
+                radial-gradient(circle at 50% 50%, rgba(255, 220, 90, .45), transparent 42%),
+                linear-gradient(180deg, #F0FFF7, #D9FBEA);
+            border: 1px solid var(--gris-borde, #D8E5DE);
+            box-shadow: 0 12px 35px rgba(0, 168, 107, .14);
+            overflow: hidden;
+        }
+        .orbita { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+
+        /* ---- sol (eje) ---- */
+        .sol { position: absolute; left: -58px; top: -58px; width: 116px; height: 116px; animation: late 3.5s ease-in-out infinite; }
+        .sol svg, .h-slot svg { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+        @keyframes late {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(255, 190, 40, .6)); scale: 1; }
+            50%      { filter: drop-shadow(0 0 22px rgba(255, 190, 40, .95)); scale: 1.06; }
+        }
+
+        /* ---- anillo que gira ---- */
+        .anillo { position: absolute; left: 0; top: 0; width: 0; height: 0; animation: girar 28s linear infinite; }
+        .guia { position: absolute; left: calc(var(--R) * -1); top: calc(var(--R) * -1); width: calc(var(--R) * 2); height: calc(var(--R) * 2); overflow: visible; }
+        .guia polygon { fill: none; stroke: #00A86B; stroke-width: 2; stroke-dasharray: 6 8; opacity: .4; }
+        @keyframes girar { to { transform: rotate(360deg); } }
+        @keyframes contra { to { transform: rotate(-360deg); } }
+        .orbita:hover .anillo, .orbita:hover .contra, .orbita.pausa .anillo, .orbita.pausa .contra { animation-play-state: paused; }
+
+        /* ---- herramientas ---- */
+        .herramienta { position: absolute; left: 0; top: 0; width: 0; height: 0;
+            transform: rotate(var(--a)) translateY(calc(var(--R) * -1)) rotate(calc(var(--a) * -1)); }
+        .contra { width: 0; height: 0; animation: contra 28s linear infinite; }
+        .h-btn { position: absolute; left: -52px; top: -52px; width: 104px; border: none; background: none; padding: 0; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .h-slot {
+            width: 92px; height: 92px; padding: 8px; background: #8b8b8b;
+            border: 4px solid; border-color: #373737 #fff #fff #373737;
+            animation: flotar 3.6s ease-in-out infinite; transition: box-shadow .2s;
+        }
+        .h-pala .h-slot { animation-delay: -1.2s; }
+        .h-pico .h-slot { animation-delay: -2.4s; }
+        @keyframes flotar { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+        .h-btn:hover .h-slot, .h-btn:focus-visible .h-slot { box-shadow: 0 0 0 4px #fff, 0 0 18px var(--c); }
+        .h-btn:focus-visible { outline: none; }
+        .h-btn.activa .h-slot { box-shadow: 0 0 0 4px #fff, 0 0 22px var(--c); }
+        .h-nombre { font-size: 13px; font-weight: 700; color: var(--verde-oscuro, #075E3F);
+            background: rgba(255, 255, 255, .9); border-radius: 8px; padding: 2px 8px; }
+        .h-tijeras { --c: #3b82c4; } .h-pala { --c: #1f9d55; } .h-pico { --c: #1fa99a; }
+
+        /* ---- cuadro de texto ---- */
+        .globo { position: absolute; z-index: 10; width: 270px; background: #fff; border: 2px solid var(--c); border-radius: 16px;
+            padding: 16px 18px; box-shadow: 0 14px 35px rgba(0, 94, 63, .22); animation: pop .25s ease-out; }
+        .globo[hidden] { display: none; }
+        .globo h3 { color: var(--c); margin-bottom: 6px; font-size: 1.05rem; }
+        .globo p { font-size: .92rem; line-height: 1.5; color: var(--gris-texto, #374151); }
+        @keyframes pop { from { opacity: 0; scale: .88; } to { opacity: 1; scale: 1; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .anillo, .contra, .h-slot, .sol, .globo { animation: none; }
+        }
+
+        /* ---- celular ---- */
+        @media (max-width: 1000px) {
+            .escenario { --R: 105px; height: 400px; }
+            .sol { left: -40px; top: -40px; width: 80px; height: 80px; }
+            .h-btn { left: -40px; top: -40px; width: 80px; }
+            .h-slot { width: 66px; height: 66px; padding: 5px; border-width: 3px; }
+            .h-nombre { font-size: 12px; }
+            .globo { position: static; width: 100%; margin-top: 12px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= HEADER ================= -->
+    <header class="site-header">
+        <div class="container">
+            <h1 class="brand">Bitnotas</h1>
+            <p class="tag">digitalizamos tus ideas y organizamos tu futuro</p>
+
+            <nav class="main-nav">
+                <a href="index.php">Inicio</a>
+                <a href="2_quienes_somos.html">Quiénes somos</a>
+                <a href="3_servicios.html">Servicios</a>
+                <a href="4_noticias.html">Noticias</a>
+                <a href="5_galeria.html">Galería</a>
+                <a href="6_contacto.php">Contacto</a>
+                <a href="7_politicas.html">Políticas</a>
+                <a href="8_prototipo.php">Prototipo</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ================= SERVICIOS ================= -->
+    <main class="container main">
+
+        <h2>Servicios</h2>
+        <p class="sv-intro">Toca una herramienta para conocer el servicio que representa.</p>
+
+        <div class="zona" id="zona">
+            <section class="escenario">
+                <div class="orbita" id="orbita">
+
+                    <div class="sol" id="sol" role="img" aria-label="Sol"></div>
+
+                    <div class="anillo">
+                        <svg class="guia" viewBox="-170 -170 340 340" aria-hidden="true">
+                            <polygon points="0,-170 147.2,85 -147.2,85" />
+                        </svg>
+
+                        <!-- LIBRO → Educación -->
+                        <div class="herramienta" style="--a:0deg">
+                            <div class="contra">
+                                <button class="h-btn h-tijeras" data-t="t-educacion" aria-expanded="false" aria-controls="globo" title="Libro — Educación">
+                                    <span class="h-slot" id="i-tijeras" aria-hidden="true"></span>
+                                    <span class="h-nombre">Educación</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PALA → Agricultura -->
+                        <div class="herramienta" style="--a:120deg">
+                            <div class="contra">
+                                <button class="h-btn h-pala" data-t="t-agricultura" aria-expanded="false" aria-controls="globo" title="Pala — Agricultura">
+                                    <span class="h-slot" id="i-pala" aria-hidden="true"></span>
+                                    <span class="h-nombre">Agricultura</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PICO DE DIAMANTE → Negocios -->
+                        <div class="herramienta" style="--a:240deg">
+                            <div class="contra">
+                                <button class="h-btn h-pico" data-t="t-negocios" aria-expanded="false" aria-controls="globo" title="Pico de diamante — Negocios">
+                                    <span class="h-slot" id="i-pico" aria-hidden="true"></span>
+                                    <span class="h-nombre">Negocios</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <div class="globo" id="globo" hidden></div>
+        </div>
+
+        <!-- Textos de cada servicio -->
+        <template id="t-educacion">
+            <h3>Educación</h3>
+            <p>Ofrecemos aplicaciones para estudiantes que permiten tomar notas digitales, crear resúmenes y organizar la información de manera eficiente y segura.</p>
+        </template>
+        <template id="t-agricultura">
+            <h3>Agricultura</h3>
+            <p>Desarrollamos herramientas digitales para el control de cultivos, ganadería y registros de campo, ayudando a mejorar la productividad y sostenibilidad.</p>
+        </template>
+        <template id="t-negocios">
+            <h3>Negocios</h3>
+            <p>Proveemos plataformas que ayudan a empresas y emprendedores a gestionar sus datos, informes y procesos de manera ordenada y rápida.</p>
+        </template>
+
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>© 2026 Bitnotas — Digitalizamos tus ideas</p>
+        </div>
+    </footer>
+
+    <script>
+        /* =====================================================
+           ICONOS PIXEL ART (16x16) dibujados con código
+           ===================================================== */
+        const N = 16, S2 = Math.SQRT2, OUT = "#1c1c24";
+        const blank = () => Array.from({ length: N }, () => Array(N).fill(null));
+
+        function contorno(g, col) {
+            const o = g.map(f => f.slice());
+            for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+                if (g[r][c]) continue;
+                if ([[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].some(([a, b]) => g[a] && g[a][b])) o[r][c] = col;
+            }
+            return o;
+        }
+        function svgDe(g) {
+            let s = '<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">';
+            g.forEach((f, r) => f.forEach((v, c) => { if (v) s += `<rect x="${c}" y="${r}" width="1" height="1" fill="${v}"/>`; }));
+            return s + "</svg>";
+        }
+        function distSeg(r, c, a, b) {
+            const dr = b[0] - a[0], dc = b[1] - a[1];
+            const t = Math.max(0, Math.min(1, ((r - a[0]) * dr + (c - a[1]) * dc) / (dr * dr + dc * dc)));
+            return { d: Math.hypot(r - a[0] - t * dr, c - a[1] - t * dc), t };
+        }
+
+        const PAL = { palo: "#8b5a2b", dHi: "#c9fff7", dMid: "#4aedd9", dDark: "#1fa99a",
+                      fHi: "#f2f2f2", fMid: "#c6c6c6", fDark: "#8a8a8a" };
+
+        /* Pico de diamante */
+        function pico() {
+            const g = blank();
+            for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+                const s = (c - r + 15) / S2, q = (c + r - 15) / S2;
+                if (Math.abs(q) < .55 && s >= 0 && s <= 15) g[r][c] = PAL.palo;
+                const dx = s - 5.66, rho = Math.hypot(dx, q), phi = Math.atan2(q, dx);
+                if (rho >= 7.2 && rho <= 10.2 && Math.abs(phi) <= .96)
+                    g[r][c] = rho > 9.2 ? PAL.dDark : rho < 8.2 ? PAL.dHi : PAL.dMid;
+            }
+            return contorno(g, OUT);
+        }
+
+        /* Pala */
+        function pala() {
+            const g = blank();
+            for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+                const s = (c - r + 15) / S2, q = (c + r - 15) / S2;
+                if (Math.abs(q) < .55 && s >= 0 && s <= 12) g[r][c] = PAL.palo;
+                let w = s > 15 ? 3.2 * Math.sqrt(Math.max(0, 1 - ((s - 15) / 3) ** 2)) : 3.2;
+                if (s < 11.5) w = Math.min(w, 1.2 + (s - 10.5) * 2);
+                if (s >= 10.5 && s <= 18 && Math.abs(q) <= w)
+                    g[r][c] = Math.abs(q) > w - .8 ? PAL.fDark : q < -1.2 ? PAL.fHi : PAL.fMid;
+            }
+            return contorno(g, OUT);
+        }
+
+        /* Libro */
+        function libro() {
+            const colores = { d: "#4e2e12", C: "#7a4a21", c: "#a2692f", y: "#f2c14e", k: "#4e2e12", p: "#f4ead0", q: "#d2c196", r: "#d33b3b" };
+            const filas = [
+                "................",
+                "..ddcccccccc....",
+                "..ddCCCCCCCCqp..",
+                "..ddCCCCCCCCpq..",
+                "..ddCyyyyyyCqp..",
+                "..ddCykkkkyCpq..",
+                "..ddCyyyyyyCqp..",
+                "..ddCCCCCCCCpq..",
+                "..ddCCCCCCCCqp..",
+                "..ddCCCCCCCCpq..",
+                "..ddCCCCCCCCqp..",
+                "..ddCCCCCCCCpq..",
+                "..ddCCCCCCCCqp..",
+                "...ppppprppppp..",
+                "....qqqqrqqqq...",
+                "........r......."
+            ];
+            const g = blank();
+            filas.forEach((fila, r) => [...fila].forEach((ch, c) => { if (ch !== ".") g[r][c] = colores[ch]; }));
+            return contorno(g, OUT);
+        }
+
+        /* Sol */
+        function sol() {
+            const g = blank();
+            for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+                const dr = r - 7.5, dc = c - 7.5, rho = Math.hypot(dr, dc);
+                if (rho <= 4.2) g[r][c] = rho > 3.2 ? "#ff9f1c" : (dr + dc < -2.5 ? "#fff3a0" : "#ffd23f");
+                for (let k = 0; k < 8; k++) {
+                    const ur = Math.sin(k * Math.PI / 4), uc = Math.cos(k * Math.PI / 4);
+                    const along = dr * ur + dc * uc, perp = Math.abs(dr * uc - dc * ur);
+                    if (along >= 5.3 && along <= 7.7 && perp <= .62) g[r][c] = along > 6.8 ? "#ff9f1c" : "#ffd23f";
+                }
+            }
+            return contorno(g, "#b4530a");
+        }
+
+        document.getElementById("i-pico").innerHTML = svgDe(pico());
+        document.getElementById("i-pala").innerHTML = svgDe(pala());
+        document.getElementById("i-tijeras").innerHTML = svgDe(libro());
+        document.getElementById("sol").innerHTML = svgDe(sol());
+
+        /* =====================================================
+           CLIC: mostrar el texto junto a la herramienta
+           ===================================================== */
+        const zona = document.getElementById("zona");
+        const orbita = document.getElementById("orbita");
+        const globo = document.getElementById("globo");
+        const botones = document.querySelectorAll(".h-btn");
+        const movil = () => window.matchMedia("(max-width: 1000px)").matches;
+
+        function cerrar() {
+            globo.hidden = true;
+            orbita.classList.remove("pausa");
+            botones.forEach(b => { b.classList.remove("activa"); b.setAttribute("aria-expanded", "false"); });
+        }
+
+        botones.forEach(btn => btn.addEventListener("click", () => {
+            const estabaActiva = btn.classList.contains("activa");
+            cerrar();
+            if (estabaActiva) return;
+
+            btn.classList.add("activa");
+            btn.setAttribute("aria-expanded", "true");
+            orbita.classList.add("pausa");
+            globo.style.setProperty("--c", getComputedStyle(btn).getPropertyValue("--c"));
+            globo.replaceChildren(document.getElementById(btn.dataset.t).content.cloneNode(true));
+            globo.hidden = false;
+
+            if (movil()) { globo.style.left = globo.style.top = ""; return; }
+
+            const z = zona.getBoundingClientRect();
+            const t = btn.querySelector(".h-slot").getBoundingClientRect();
+            const gw = globo.offsetWidth, gh = globo.offsetHeight;
+            let left = (t.left + t.width / 2 < z.left + z.width / 2) ? t.left - z.left - gw - 12 : t.right - z.left + 12;
+            let top = t.top - z.top;
+            left = Math.max(4, Math.min(left, z.width - gw - 4));
+            top = Math.max(4, Math.min(top, 560 - gh - 4));
+            globo.style.left = left + "px";
+            globo.style.top = top + "px";
+        }));
+
+        document.addEventListener("click", e => { if (!e.target.closest(".h-btn") && !e.target.closest(".globo")) cerrar(); });
+        document.addEventListener("keydown", e => { if (e.key === "Escape") cerrar(); });
+        window.addEventListener("resize", cerrar);
+    </script>
+
+</body>
+
+</html>

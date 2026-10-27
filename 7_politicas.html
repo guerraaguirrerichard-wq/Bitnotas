@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bitnotas — Políticas</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* ========== POLÍTICAS: TRES ICONOS INTERACTIVOS ========== */
+        .pl-intro { color: var(--verde-oscuro, #075E3F); font-weight: 600; margin-bottom: 18px; max-width: 62ch; }
+
+        .escenario {
+            max-width: 980px; margin: 0 auto 40px; padding: 40px 20px 36px;
+            border-radius: 28px; border: 1px solid var(--gris-borde, #D8E5DE);
+            background:
+                radial-gradient(circle at 50% 20%, rgba(182, 242, 58, .25), transparent 55%),
+                linear-gradient(180deg, #F0FFF7, #D9FBEA);
+            box-shadow: 0 12px 35px rgba(0, 168, 107, .14);
+        }
+
+        /* ---- fila de iconos ---- */
+        .iconos { display: flex; justify-content: center; align-items: flex-start; gap: clamp(18px, 6vw, 90px); flex-wrap: wrap; }
+        .pol { --c: #3b82c4; }
+        .p-seguridad { --c: #3b82c4; }
+        .p-ambiental { --c: #1f9d55; }
+        .p-inclusion { --c: #7b4bb8; }
+
+        .pol-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            border: none; background: none; padding: 0; cursor: pointer; width: 150px;
+        }
+        .icono {
+            width: 128px; height: 128px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 62px; line-height: 1; color: var(--c);
+            background: #fff; border: 5px solid var(--c);
+            box-shadow: 0 10px 26px rgba(0, 94, 63, .22);
+            animation: flotar 4s ease-in-out infinite;
+            transition: transform .2s, box-shadow .2s, background .2s, color .2s;
+        }
+        .icono svg { width: 70px; height: 70px; display: block; }
+        .p-ambiental .icono { animation-delay: -1.3s; }
+        .p-inclusion .icono { animation-delay: -2.6s; }
+        @keyframes flotar { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+
+        .pol-btn:hover .icono, .pol-btn:focus-visible .icono {
+            transform: scale(1.08);
+            box-shadow: 0 0 0 8px color-mix(in srgb, var(--c) 25%, transparent), 0 10px 26px rgba(0, 94, 63, .22);
+        }
+        .pol-btn:focus-visible { outline: none; }
+        .pol.abierta .icono { background: var(--c); color: #fff; animation: none; }
+
+        .pol-nombre {
+            font-size: 15px; font-weight: 700; text-align: center; color: var(--verde-oscuro, #075E3F);
+            background: rgba(255, 255, 255, .9); border-radius: 10px; padding: 3px 12px;
+        }
+
+        /* ---- cuadro de texto ---- */
+        .info { max-width: 580px; margin: 30px auto 0; min-height: 130px; position: relative; }
+        .pista {
+            height: 130px; display: flex; align-items: center; justify-content: center; text-align: center;
+            border: 2px dashed var(--gris-borde, #B9D3C6); border-radius: 18px; padding: 0 20px;
+            color: var(--gris, #6B7280); font-weight: 600;
+        }
+        .globo {
+            --x: 50%;
+            position: relative; background: #fff; border: 2px solid var(--c); border-radius: 18px;
+            padding: 20px 24px; box-shadow: 0 14px 35px rgba(0, 94, 63, .2); animation: pop .25s ease-out;
+        }
+        .globo[hidden], .pista[hidden] { display: none; }
+        .globo::before {
+            content: ""; position: absolute; top: -10px; left: calc(var(--x) - 9px);
+            width: 16px; height: 16px; background: #fff; transform: rotate(45deg);
+            border-left: 2px solid var(--c); border-top: 2px solid var(--c);
+        }
+        .globo h3 { color: var(--c); margin-bottom: 8px; }
+        .globo p { color: var(--gris-texto, #374151); line-height: 1.6; }
+        @keyframes pop { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+
+        @media (prefers-reduced-motion: reduce) { .icono, .globo { animation: none; } }
+
+        @media (max-width: 640px) {
+            .escenario { padding: 28px 12px 26px; }
+            .pol-btn { width: 100px; }
+            .icono { width: 88px; height: 88px; font-size: 42px; border-width: 4px; }
+            .icono svg { width: 48px; height: 48px; }
+            .pol-nombre { font-size: 13px; padding: 2px 8px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= HEADER ================= -->
+    <header class="site-header">
+        <div class="container">
+            <h1 class="brand">Bitnotas</h1>
+            <p class="tag">digitalizamos tus ideas y organizamos tu futuro</p>
+
+            <nav class="main-nav">
+                <a href="index.php">Inicio</a>
+                <a href="2_quienes_somos.html">Quiénes somos</a>
+                <a href="3_servicios.html">Servicios</a>
+                <a href="4_noticias.html">Noticias</a>
+                <a href="5_galeria.html">Galería</a>
+                <a href="6_contacto.php">Contacto</a>
+                <a href="7_politicas.html">Políticas</a>
+                <a href="8_prototipo.php">Prototipo</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ================= POLÍTICAS ================= -->
+    <main class="container main">
+
+        <h2>Políticas</h2>
+        <p class="pl-intro">
+            Estos son los compromisos que guían a Bitnotas. Toca un icono para conocer cada política.
+        </p>
+
+        <section class="escenario">
+
+            <div class="iconos">
+
+                <!-- CANDADO → Seguridad -->
+                <div class="pol p-seguridad">
+                    <button class="pol-btn" data-t="t-seguridad" aria-expanded="false" aria-controls="globo">
+                        <span class="icono" aria-hidden="true">🔒</span>
+                        <span class="pol-nombre">Seguridad</span>
+                    </button>
+                </div>
+
+                <!-- PLANTA → Responsabilidad ambiental -->
+                <div class="pol p-ambiental">
+                    <button class="pol-btn" data-t="t-ambiental" aria-expanded="false" aria-controls="globo">
+                        <span class="icono" aria-hidden="true">🌱</span>
+                        <span class="pol-nombre">Responsabilidad ambiental</span>
+                    </button>
+                </div>
+
+                <!-- PERSONAS DE LA MANO → Inclusión -->
+                <div class="pol p-inclusion">
+                    <button class="pol-btn" data-t="t-inclusion" aria-expanded="false" aria-controls="globo">
+                        <span class="icono" aria-hidden="true">
+                            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="14" cy="14" r="5"/><circle cx="32" cy="14" r="5"/><circle cx="50" cy="14" r="5"/>
+                                <path d="M14 20v22M32 20v22M50 20v22"/>
+                                <path d="M14 42l-5 14M14 42l5 14M32 42l-5 14M32 42l5 14M50 42l-5 14M50 42l5 14"/>
+                                <path d="M7 38l7-10Q23 35 32 28Q41 35 50 28l7 10"/>
+                            </svg>
+                        </span>
+                        <span class="pol-nombre">Inclusión</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="info" aria-live="polite">
+                <p class="pista" id="pista">Selecciona un icono para ver la política correspondiente.</p>
+                <div class="globo" id="globo" hidden></div>
+            </div>
+
+        </section>
+
+        <!-- Textos de cada política -->
+        <template id="t-seguridad">
+            <h3>Seguridad</h3>
+            <p>Bitnotas garantiza que la información registrada estará protegida con copias de seguridad y contraseñas seguras.</p>
+        </template>
+        <template id="t-ambiental">
+            <h3>Responsabilidad Ambiental</h3>
+            <p>Promovemos el ahorro de papel y el uso de herramientas digitales para proteger los bosques y fomentar la sostenibilidad.</p>
+        </template>
+        <template id="t-inclusion">
+            <h3>Inclusión</h3>
+            <p>Nuestras aplicaciones están diseñadas para ser accesibles a personas con discapacidad visual o auditiva, con opciones de lectura de voz y subtítulos.</p>
+        </template>
+
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>© 2026 Bitnotas — Digitalizamos tus ideas</p>
+        </div>
+    </footer>
+
+    <script>
+        const politicas = document.querySelectorAll(".pol");
+        const globo = document.getElementById("globo");
+        const pista = document.getElementById("pista");
+
+        function cerrar() {
+            politicas.forEach(p => {
+                p.classList.remove("abierta");
+                p.querySelector(".pol-btn").setAttribute("aria-expanded", "false");
+            });
+            globo.hidden = true;
+            pista.hidden = false;
+        }
+
+        politicas.forEach(p => {
+            const btn = p.querySelector(".pol-btn");
+            btn.addEventListener("click", () => {
+                const estabaAbierta = p.classList.contains("abierta");
+                cerrar();
+                if (estabaAbierta) return;
+
+                p.classList.add("abierta");
+                btn.setAttribute("aria-expanded", "true");
+                pista.hidden = true;
+
+                globo.style.setProperty("--c", getComputedStyle(p).getPropertyValue("--c"));
+                globo.replaceChildren(document.getElementById(btn.dataset.t).content.cloneNode(true));
+                globo.hidden = false;
+
+                /* La flechita del cuadro apunta al icono elegido */
+                const i = p.querySelector(".icono").getBoundingClientRect();
+                const g = globo.getBoundingClientRect();
+                const x = Math.max(28, Math.min(i.left + i.width / 2 - g.left, g.width - 28));
+                globo.style.setProperty("--x", x + "px");
+            });
+        });
+
+        document.addEventListener("click", e => { if (!e.target.closest(".pol") && !e.target.closest(".globo")) cerrar(); });
+        document.addEventListener("keydown", e => { if (e.key === "Escape") cerrar(); });
+        window.addEventListener("resize", cerrar);
+    </script>
+
+</body>
+
+</html>
